@@ -1,0 +1,14 @@
+! Entre Aveiro e porta f1/0 ainda não á comunicação
+conf t
+
+! Aveiro connection
+interface FastEthernet0/0
+    ip address 10.1.100.2 255.255.255.252
+    no shutdown
+
+! NetA1 connection
+interface FastEthernet1/0
+    ip address 110.1.1.129 255.255.255.192
+    no shutdown
+
+end

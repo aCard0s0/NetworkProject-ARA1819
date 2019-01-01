@@ -1,0 +1,20 @@
+conf t
+
+interface Loopback0
+    ip address 192.100.1.1 255.255.255.0
+    ip ospf 100 area 0
+
+! Vigo connection
+interface FastEthernet0/0
+    ip address 4.4.4.1 255.255.255.252
+    no shutdown
+
+! EmpC conncetion
+interface FastEthernet1/0
+    ip address 10.1.100.9 255.255.255.252
+    no shutdown
+
+router bgp 1000
+    neighbor 4.4.4.2 remote-as 3000
+    neighbor 10.1.100.10 remote-as 65400
+end

@@ -1,0 +1,15 @@
+conf t
+
+interface Loopback0
+    ip address 192.100.1.2 255.255.255.0
+    ip ospf 100 area 0
+    no shutdown
+
+interface FastEthernet0/0
+    ip address 4.4.4.5 255.255.255.252
+    no shutdown
+
+router bgp 1000
+    neighbor 4.4.4.6 remote-as 4000
+
+end

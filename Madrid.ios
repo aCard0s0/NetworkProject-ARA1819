@@ -1,0 +1,15 @@
+conf t
+
+interface FastEthernet0/0
+    ip address 4.4.4.6 255.255.255.252
+    no shutdown
+
+interface FastEthernet0/1
+    ip address 4.4.4.9 255.255.255.252
+    no shutdown
+
+router bgp 4000
+    neighbor 4.4.4.5 remote-as 1000
+    neighbor 4.4.4.10 remote-as 3000
+
+end
