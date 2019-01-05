@@ -17,7 +17,7 @@ interface FastEthernet1/0
 
 ! InternetCore connection
 interface FastEthernet2/0
-    ip address dhcp
+    ip address 2.2.2.2 255.255.255.0
     no shutdown
 
 router bgp 40000
@@ -26,9 +26,9 @@ router bgp 40000
      !Madrid
     neighbor 4.4.4.10 remote-as 20000   
 
-address-family ipv4 unicast
-    network 65.0.1.0
-    neighbor 4.4.4.5 activate
-    neighbor 4.4.4.10 activate
-    exit-address-family
+    address-family ipv4 unicast
+        network 65.0.1.0
+        neighbor 4.4.4.5 activate
+        neighbor 4.4.4.10 activate
+        exit-address-family
 end

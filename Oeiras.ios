@@ -1,8 +1,5 @@
 conf t
 
-ip name-server 10.5.100.100
-ip domain lookup
-
 interface Loopback0
     ip address 192.168.1.4 255.255.255.255
     ip ospf 1 area 0
@@ -12,13 +9,24 @@ interface Loopback0
 interface FastEthernet0/0
     ip address 10.4.40.2 255.255.0.0
     ip ospf 1 area 0
+    ip policy route-map TUNNEL
+    mpls traffic-eng tunnels
+    ip rsvp bandwidth 71680
     no shutdown
 
 ! netD1 conncetion
 interface FastEthernet0/1
     ip address 10.0.40.1 255.255.0.0
     ip ospf 1 area 0
+    ip vrf forwarding VPN-ClientA
     no shutdown
+
+interface Tunnel2
+    ip unnumbered Loopback0
+    tunnel mode mpls traffic-eng
+    tunnel destination 192.168.1.2
+    tunnel mpls traffic-eng bandwidth 30720
+    tunnel mpls traffic-eng path-option 1 dynamic
 
 router ospf 1
     mpls traffic-eng router-id Loopback0
@@ -38,11 +46,57 @@ router bgp 1000
     neighbor 192.168.1.3 remote-as 1000
     neighbor 192.168.1.3 update-source Loopback0
 
-address-family ipv4 unicast
-    network 192.168.1.0 mask 255.255.255.128
-    neighbor 192.168.1.1 activate
-    neighbor 192.168.1.2 activate
-    neighbor 192.168.1.3 activate
-    exit-address-family
+    address-family ipv4 unicast
+        network 192.168.1.0 mask 255.255.255.128
+        neighbor 192.168.1.1 activate
+        neighbor 192.168.1.2 activate
+        neighbor 192.168.1.3 activate
+        exit-address-family
+
+! NetA2 & NetB2 ipv4
+access-list 10 permit 110.1.1.128 0.0.0.128
+access-list 10 permit 111.1.1.128 0.0.0.128
+route-map LNET_LP permit 25
+    match ip address 10
+    set local-preference 210
+route-map LNET_LP permit 30
+
+! NetA2 & NetB2 ipv6
+!ipv6 prefix-list lnet6 seq 20 permit 3001:110:100::/49
+!ipv6 prefix-list lnet6 seq 22 permit 3001:111:100::/49
+!route-map LNET_LP6 permit 25
+!    match ip address prefix-list lnet6
+!    set local-preference 210
+!route-map LNET_LP6 permit 30
+
+
+! Tunnel2
+access-list 11 permit 111.1.1.128 0.0.0.128
+access-list 11 permit 10.0.40.0 0.0.0.255
+route-map TUNNEL permit 12
+    match ip address 11
+    set interface Tunnel2
+
+! MPLS-VPN
+ip vrf VPN-ClientA
+    rd 1000:1
+    route-target export 1000:1
+    route-target import 1000:1
+
+router bgp 1000
+    address-family vpnv4
+        neighbor 192.172.100.3 activate
+        neighbor 192.172.100.3 send-community both
+        exit-address-family
+    address-family ipv4 vrf VPN-ClientA
+        redistribute connected
+        exit-address-family
+
+router ospf 200 vrf VPN-ClientA
+    mpls traffic-eng router-id Loopback0
+    mpls traffic-eng area 0
+    network 10.0.40.0 0.0.0.255 area 0
+
+ip route vrf VPN-ClientA 0.0.0.0 0.0.0.0 192.168.1.2 global
 
 end

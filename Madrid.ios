@@ -38,13 +38,13 @@ router bgp 20000
     ! Lisboa2
     neighbor 4.4.4.14 remote-as 1000
 
-address-family ipv4
-    ! local networks
-    network 190.100.1.0 mask 255.255.255.0
-    network 190.200.1.0 mask 255.255.255.0
-    neighbor 4.4.4.1 activate
-    neighbor 4.4.4.9 activate
-    neighbor 4.4.4.14 activate
- exit-address-family
+    address-family ipv4
+        ! local networks
+        network 190.100.1.0 mask 255.255.255.0
+        network 190.200.1.0 mask 255.255.255.0
+        neighbor 4.4.4.1 activate
+        neighbor 4.4.4.9 activate
+        neighbor 4.4.4.14 activate
+    exit-address-family
 
 end

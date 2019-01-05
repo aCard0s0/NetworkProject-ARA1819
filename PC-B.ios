@@ -1,12 +1,12 @@
 conf t
 
 no ip routing
-ip default-gateway 10.5.20.3
+ip default-gateway 111.1.1.1
 ip name-server 10.5.100.100
 ip domain lookup
 
 interface FastEthernet0/0
-    ip address 10.5.20.10 255.255.0.0
+    ip address 111.1.1.2 255.255.255.128
     no shutdown
 
 end

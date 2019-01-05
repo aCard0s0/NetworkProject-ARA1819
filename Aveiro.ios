@@ -1,29 +1,32 @@
 conf t
 
-ip name-server 10.5.100.100
-ip domain lookup
-
 interface Loopback0
     ip address 192.168.1.3 255.255.255.0
     ip ospf 1 area 0
     no shutdown
 
-! Porto connection
+! EthernetCore connection
 interface FastEthernet0/0
     ip address 10.0.10.2 255.255.255.0
     ip ospf 1 area 0
+    mpls traffic-eng tunnels
+    ip rsvp bandwidth 71680
     no shutdown
 
 ! EmpA1 connection
 interface FastEthernet0/1
     ip address 10.1.30.1 255.255.0.0
     ip ospf 1 area 0
+    ip vrf forwarding VPN-ClientA
     no shutdown
 
 ! EmpB1 connection
 interface FastEthernet1/0
     ip address 10.2.30.1 255.255.0.0
     ip ospf 1 area 0
+    ip policy route-map TUNNEL
+    mpls traffic-eng tunnels
+    ip rsvp bandwidth 71680
     no shutdown
 
 ! DataCenterAveiro connection
@@ -31,6 +34,13 @@ interface FastEthernet1/1
     ip address 10.3.30.1 255.255.0.0
     ip ospf 1 area 0
     no shutdown
+
+interface Tunnel1
+    ip unnumbered Loopback0
+    tunnel mode mpls traffic-eng
+    tunnel destination 192.168.1.2
+    tunnel mpls traffic-eng bandwidth 30720
+    tunnel mpls traffic-eng path-option 1 dynamic
 
 router ospf 1
     mpls traffic-eng router-id Loopback0
@@ -41,24 +51,70 @@ router ospf 1
 router bgp 1000
     bgp router-id 192.168.1.3
     ! Porto
-    neighbor 192.100.1.1 remote-as 1000
-    neighbor 192.100.1.1 update-source Loopback0
+    neighbor 192.168.1.1 remote-as 1000
+    neighbor 192.168.1.1 update-source Loopback0
     ! Lisboa2
-    neighbor 192.100.1.2 remote-as 1000
-    neighbor 192.100.1.2 update-source Loopback0
+    neighbor 192.168.1.2 remote-as 1000
+    neighbor 192.168.1.2 update-source Loopback0
     ! Oeiras
-    neighbor 192.100.1.4 remote-as 1000
-    neighbor 192.100.1.4 update-source Loopback0
+    neighbor 192.168.1.4 remote-as 1000
+    neighbor 192.168.1.4 update-source Loopback0
 
-address-family ipv4
-    network 192.172.100.0 mask 255.255.255.128
-    neighbor 10.1.100.10 activate
-    neighbor 192.100.1.1 activate
-    neighbor 192.100.1.1 next-hop-self
-    neighbor 192.100.1.2 activate
-    neighbor 192.100.1.2 next-hop-self
-    neighbor 192.100.1.3 activate
-    neighbor 192.100.1.3 next-hop-self
-    exit-address-family
+    address-family ipv4
+        network 192.168.1.0 mask 255.255.255.128
+        neighbor 192.168.1.1 activate
+        neighbor 192.168.1.1 next-hop-self
+        neighbor 192.168.1.1 route-map LNET_LP in
+        neighbor 192.168.1.2 activate
+        neighbor 192.168.1.2 next-hop-self
+        neighbor 192.168.1.4 activate
+        neighbor 192.168.1.4 next-hop-self
+        exit-address-family
+
+! NetA1 & NetB1 ipv4
+access-list 10 permit 110.1.1.0 0.0.0.128
+access-list 10 permit 111.1.1.0 0.0.0.128
+route-map LNET_LP permit 25
+    match ip address 10
+    set local-preference 210
+route-map LNET_LP permit 30
+
+! NetA1 & NetB1 ipv6
+ipv6 prefix-list lnet6 seq 20 permit 3001:110:100::/48
+ipv6 prefix-list lnet6 seq 22 permit 3001:111:100::/48
+route-map LNET_LP6 permit 25
+    match ip address prefix-list lnet6
+    set local-preference 210
+route-map LNET_LP6 permit 30
+
+
+! Tunnel1
+access-list 11 permit 111.1.1.0 0.0.0.128
+access-list 11 permit 10.2.30.0 0.0.0.255
+route-map TUNNEL permit 12
+    match ip address 11
+    set interface Tunnel1
+
+! MPLS-VPN
+ip vrf VPN-ClientA
+    rd 1000:1
+    route-target export 1000:1
+    route-target import 1000:1
+
+router bgp 1000
+    address-family vpnv4
+        neighbor 192.172.100.4 activate
+        neighbor 192.172.100.4 send-community both
+        exit-address-family
+    address-family ipv4 vrf VPN-ClientA
+        redistribute connected
+        exit-address-family
+
+router ospf 200 vrf VPN-ClientA
+    mpls traffic-eng router-id Loopback0
+    mpls traffic-eng area 0
+    network 10.1.0.0 0.0.255.255 area 0
+
+ip route vrf VPN-ClientA 0.0.0.0 0.0.0.0 192.168.1.2 global
 
 end

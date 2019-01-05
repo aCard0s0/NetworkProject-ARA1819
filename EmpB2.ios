@@ -1,0 +1,18 @@
+conf t
+
+ip name-server 10.5.100.100
+ip domain lookup
+
+! Oeiras connection
+interface FastEthernet0/0
+    ip address 10.0.40.3 255.255.0.0
+    ip ospf 1 area 0
+    no shutdown
+
+! NetB2 connection
+interface FastEthernet1/0
+    ip address 111.1.1.130 255.255.255.128
+    ip ospf 1 area 0
+    no shutdown
+
+end
