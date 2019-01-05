@@ -1,6 +1,9 @@
 ! Entre Aveiro e porta f1/0 ainda não á comunicação
 conf t
 
+ip name-server 10.5.100.100
+ip domain lookup
+
 ! Aveiro connection
 interface FastEthernet0/0
     ip address 10.1.30.2 255.255.0.0
