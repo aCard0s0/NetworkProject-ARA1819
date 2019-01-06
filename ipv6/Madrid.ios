@@ -1,0 +1,98 @@
+conf t
+ipv6 unicast-routing
+
+! Porto connection
+interface FastEthernet0/0
+    ipv6 enable
+    ipv6 address 4001:4:4:0:1::2/80
+    no shutdown
+
+! Lisboa1 connection
+interface FastEthernet0/1
+    ipv6 enable
+    ipv6 address 4001:4:4:0:2::1/80
+    no shutdown
+
+! Lisboa2 connection
+interface FastEthernet2/1
+    ipv6 enable
+    ipv6 address 4001:4:4:0:3::1/80
+    no shutdown
+
+! netM2 connection
+interface FastEthernet1/0
+    ipv6 enable
+    ipv6 address 4201:200:200::2/48
+    no shutdown
+
+! netM1 connection
+interface FastEthernet1/1
+    ipv6 enable
+    ipv6 address 4201:200:100::1/48
+    no shutdown
+
+! InternetCore connection
+interface FastEthernet2/0
+    ipv6 enable
+    no shutdown
+
+end
+
+
+
+
+
+
+
+
+
+
+!ipv4
+! Porto connection
+interface FastEthernet0/0
+    ip address 4.4.4.2 255.255.255.252
+    no shutdown
+
+! Lisboa1 connection
+interface FastEthernet0/1
+    ip address 4.4.4.10 255.255.255.252
+    no shutdown
+
+! Lisboa2 connection
+interface FastEthernet2/1
+    ip address 4.4.4.13 255.255.255.252
+    no shutdown
+
+! netM2 connection
+interface FastEthernet1/0
+    ip address 190.100.1.1 255.255.255.0
+    no shutdown
+
+! netM1 connection
+interface FastEthernet1/1
+    ip address 190.200.1.1 255.255.255.0
+    no shutdown
+
+! InternetCore connection
+interface FastEthernet2/0
+    ip address dhcp
+    no shutdown
+
+router bgp 20000
+    ! Porto
+    neighbor 4.4.4.1 remote-as 1000
+    ! Lisboa1
+    neighbor 4.4.4.9 remote-as 40000
+    ! Lisboa2
+    neighbor 4.4.4.14 remote-as 1000
+
+    address-family ipv4
+        ! local networks
+        network 190.100.1.0 mask 255.255.255.0
+        network 190.200.1.0 mask 255.255.255.0
+        neighbor 4.4.4.1 activate
+        neighbor 4.4.4.9 activate
+        neighbor 4.4.4.14 activate
+    exit-address-family
+
+end

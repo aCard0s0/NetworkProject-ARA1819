@@ -1,0 +1,63 @@
+conf t
+ipv6 unicast-routing
+
+! Lisboa2 connection
+interface FastEthernet0/0
+    ipv6 enable
+    ipv6 address 4001:4:4:0:4::2/80
+    no shutdown
+
+! Madrid connection
+interface FastEthernet0/1
+    ipv6 enable
+    ipv6 address 4001:4:4:0:2::2/80
+    no shutdown
+
+! netL1 connection
+interface FastEthernet1/0
+    ipv6 enable
+    ipv6 address 4301:65::1/48
+    no shutdown
+
+! InternetCore connection
+interface FastEthernet2/0
+    ipv6 enable
+    no shutdown
+
+end
+
+
+
+!ipv4
+! Lisboa2 connection
+interface FastEthernet0/0
+    ip address 4.4.4.6 255.255.255.252
+    no shutdown
+
+! Madrid connection
+interface FastEthernet0/1
+    ip address 4.4.4.9 255.255.255.252
+    no shutdown
+
+! netL1 connection
+interface FastEthernet1/0
+    ip address 65.0.1.1 255.255.255.0
+    no shutdown
+
+! InternetCore connection
+interface FastEthernet2/0
+    ip address 2.2.2.2 255.255.255.0
+    no shutdown
+
+router bgp 40000
+    ! Lisboa2
+    neighbor 4.4.4.5 remote-as 1000
+     !Madrid
+    neighbor 4.4.4.10 remote-as 20000   
+
+    address-family ipv4 unicast
+        network 65.0.1.0 mask 255.255.255.0
+        neighbor 4.4.4.5 activate
+        neighbor 4.4.4.10 activate
+        exit-address-family
+end

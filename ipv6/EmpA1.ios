@@ -1,0 +1,52 @@
+conf t
+ipv6 unicast-routing
+ipv6 router ospf 1
+router-id 1.1.1.2
+exit
+
+! Aveiro connection
+interface FastEthernet0/0
+    ipv6 enable
+    ipv6 address 4001:100:1:3000::2/52
+    ipv6 ospf 1 area 0
+    no shutdown
+
+! NetA1 connection
+interface FastEthernet1/0
+    ipv6 enable
+    ipv6 address 3001:110::1/49
+    ipv6 ospf 1 area 0
+    no shutdown
+
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+! Aveiro connection
+interface FastEthernet0/0
+    ip address 10.1.30.2 255.255.0.0
+    ip ospf 1 area 0
+    no shutdown
+
+! NetA1 connection
+interface FastEthernet1/0
+    ip address 110.1.1.1 255.255.255.128
+    ip ospf 1 area 0
+    no shutdown
+
+end
