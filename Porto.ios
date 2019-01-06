@@ -47,7 +47,7 @@ router bgp 1000
         neighbor 192.168.1.4 next-hop-self
         exit-address-family
 
-! cancelar netL1 vinda de Madrid
+! cancelar netL1 via  Madrid
 access-list 6 permit 65.0.1.0 0.0.0.255
 route-map SIP_ROUTE deny 11
     match ip address 6
